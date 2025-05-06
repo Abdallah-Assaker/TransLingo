@@ -1,0 +1,17 @@
+{
+  "name": "translator-api-tests",
+  "version": "1.0.0",
+  "description": "Playwright API tests for Translator App",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test --project=api",
+    "test:all": "npx playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.44.1",
+    "@faker-js/faker": "^8.4.1"
+  }
+}
