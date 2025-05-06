@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  translator:
+    build:
+      context: .
+      dockerfile: Translator.API/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=TranslatorApp;User=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=Yes;Encrypt=False;
+    depends_on:
+      - db
+    volumes:
+      - ./Translator.API/Uploads:/app/Uploads
+      - ./openapi.yaml:/app/openapi.yaml
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8081:8080"
+    environment:
+      - SWAGGER_JSON=/app/openapi.yaml
+    volumes:
+      - ./openapi.yaml:/app/openapi.yaml
+
+  db:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    environment:
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - dbdata:/var/opt/mssql
+
+volumes:
+  dbdata:
