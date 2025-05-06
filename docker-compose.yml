@@ -3,7 +3,7 @@ version: '3.8'
 services:
   translator:
     build:
-      context: .
+      context: Backend
       dockerfile: Translator.API/Dockerfile
     ports:
       - "8080:8080"
