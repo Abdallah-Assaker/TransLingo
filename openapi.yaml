@@ -1,0 +1,1334 @@
+openapi: 3.0.0
+info:
+  title: Translator App API
+  description: API documentation for the Translator App, facilitating document translations via a user-admin workflow.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register User
+      operationId: registerUser
+      description: Creates a new user account with the provided information.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: User details excluding sensitive information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      operationId: login
+      description: Authenticates a user and provides a JWT token for subsequent requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT token with expiration time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  /api/auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get User Profile
+      operationId: getUserProfile
+      description: Retrieves the current authenticated user's profile details.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Authentication
+      summary: Update User Profile
+      operationId: updateUserProfile
+      description: Updates the current authenticated user's profile information.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  /api/translationrequest:
+    post:
+      tags:
+        - User Translation Requests
+      summary: Create Translation Request
+      operationId: createTranslationRequest
+      description: Creates a new translation request with an uploaded file.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateTranslationRequest'
+      responses:
+        '201':
+          description: Created translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - User Translation Requests
+      summary: Get User's Translation Requests
+      operationId: getUsersTranslationRequests
+      description: Retrieves a list of all translation requests created by the current user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of translation request objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserTranslationRequestListItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/translationrequest/{id}':
+    get:
+      tags:
+        - User Translation Requests
+      summary: Get Single Translation Request
+      operationId: getSingleTranslationRequest
+      description: Retrieves detailed information about a specific translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detailed translation request information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestDetailsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - User Translation Requests
+      summary: Update Translation Request
+      operationId: updateTranslationRequest
+      description: Updates information about an existing translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTranslationRequest'
+      responses:
+        '200':
+          description: Updated translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - User Translation Requests
+      summary: Delete Translation Request
+      operationId: deleteTranslationRequest
+      description: Removes a translation request from the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Empty response on success
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/translationrequest/{id}/download-original':
+    get:
+      tags:
+        - User Translation Requests
+      summary: Download Original File
+      operationId: downloadOriginalFileUser
+      description: Downloads the original document that was submitted for translation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File download stream
+          content:
+            application/octet-stream: # Generic binary type
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/translationrequest/{id}/download-translated':
+    get:
+      tags:
+        - User Translation Requests
+      summary: Download Translated File
+      operationId: downloadTranslatedFileUser
+      description: Downloads the translated document for a completed translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File download stream
+          content:
+            application/octet-stream: # Generic binary type
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/translationrequest/{id}/resubmit':
+    post:
+      tags:
+        - User Translation Requests
+      summary: Resubmit Rejected Request
+      operationId: resubmitRejectedRequest
+      description: Updates and resubmits a previously rejected translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResubmitTranslationRequest'
+      responses:
+        '200':
+          description: Updated translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  /api/admin/translation:
+    get:
+      tags:
+        - Admin Translation Management
+      summary: Get All Translation Requests
+      operationId: getAllTranslationRequests
+      description: Retrieves a list of all translation requests in the system.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of all translation requests with user information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminTranslationRequestListItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}':
+    get:
+      tags:
+        - Admin Translation Management
+      summary: Get Translation Request Details (Admin)
+      operationId: getTranslationRequestDetailsAdmin
+      description: Retrieves detailed information about a specific translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detailed translation request with user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminTranslationRequestDetailsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}/approve':
+    post:
+      tags:
+        - Admin Translation Management
+      summary: Approve Translation Request
+      operationId: approveTranslationRequest
+      description: Approves a translation request, changing its status to Approved.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCommentRequest'
+      responses:
+        '200':
+          description: Updated translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}/reject':
+    post:
+      tags:
+        - Admin Translation Management
+      summary: Reject Translation Request
+      operationId: rejectTranslationRequest
+      description: Rejects a translation request, requiring admin to provide a reason.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCommentRequest'
+      responses:
+        '200':
+          description: Updated translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}/complete':
+    post:
+      tags:
+        - Admin Translation Management
+      summary: Complete Translation Request
+      operationId: completeTranslationRequest
+      description: Completes a translation request by uploading the translated file.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompleteTranslationRequest'
+      responses:
+        '200':
+          description: Updated translation request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranslationRequestDetailsResponse' # Using details response as it includes completedAt
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}/download-original':
+    get:
+      tags:
+        - Admin Translation Management
+      summary: Download Original File (Admin)
+      operationId: downloadOriginalFileAdmin
+      description: Downloads the original document submitted for translation.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File download stream
+          content:
+            application/octet-stream: # Generic binary type
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/admin/translation/{id}/download-translated':
+    get:
+      tags:
+        - Admin Translation Management
+      summary: Download Translated File (Admin)
+      operationId: downloadTranslatedFileAdmin
+      description: Downloads the translated document for a completed translation request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The translation request ID (GUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File download stream
+          content:
+            application/octet-stream: # Generic binary type
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  /api/auth/users:
+    get:
+      tags:
+        - Admin User Management
+      summary: Get All Users
+      operationId: getAllUsers
+      description: Retrieves a list of all users in the system.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Array of all user accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminUserListItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+  '/api/auth/users/{id}':
+    get:
+      tags:
+        - Admin User Management
+      summary: Get User By ID
+      operationId: getUserById
+      description: Retrieves detailed information about a specific user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The user ID (string).
+          schema:
+            type: string
+            format: uuid # Assuming Identity user ID is typically GUID in .NET Core
+      responses:
+        '200':
+          description: Detailed user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetailsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Admin User Management
+      summary: Update User (Admin)
+      operationId: updateUserAdmin
+      description: Updates user information and role assignments.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The user ID (string).
+          schema:
+            type: string
+            format: uuid # Assuming Identity user ID is typically GUID in .NET Core
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateUserRequest'
+      responses:
+        '200':
+          description: Updated user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetailsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: user@example.com
+        password:
+          type: string
+          description: User's chosen password.
+          example: SecurePassword123!
+        ConfirmPassword:
+          type: string
+          description: User's chosen password.
+          example: SecurePassword123!
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Doe
+      required:
+        - email
+        - password
+        - ConfirmPassword
+        - firstName
+        - lastName
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: user@example.com
+        password:
+          type: string
+          description: User's password.
+          example: SecurePassword123!
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT authentication token.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        expiration:
+          type: string
+          format: date-time
+          description: Token expiration timestamp (UTC).
+          example: '2025-04-27T12:00:00Z'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User's unique identifier.
+          example: 8f7e6d5c-4b3a-2a1b-0c9d-8e7f6a5b4c3d
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: user@example.com
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Doe
+        userName:
+          type: string
+          description: User's username (usually email).
+          example: user@example.com
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user account was created (UTC).
+          example: '2025-04-27T10:30:00Z'
+
+    UserProfileResponse:
+      allOf:
+        - $ref: '#/components/schemas/UserResponse'
+        - type: object
+          properties:
+            updatedAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: Timestamp when the user profile was last updated (UTC).
+              example: '2025-04-27T11:45:00Z'
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Smith
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: john.smith@example.com
+        currentPassword:
+          type: string
+          description: User's current password (required for email changes).
+          example: CurrentPassword123!
+      required:
+        - firstName
+        - lastName
+
+    CreateTranslationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Short name for the translation request.
+          example: Business Contract Translation
+        description:
+          type: string
+          description: Detailed description of the translation.
+          example: Legal business contract that needs translation
+        sourceLanguage:
+          type: string
+          description: The language of the original document.
+          example: English
+        targetLanguage:
+          type: string
+          description: The language to translate to.
+          example: Spanish
+        file:
+          type: string
+          format: binary
+          description: The document file to upload (max 10MB, txt, doc, docx, pdf).
+        userComment:
+          type: string
+          nullable: true
+          description: Comments from the user about the request.
+          example: Please preserve the legal terminology
+      required:
+        - title
+        - description
+        - sourceLanguage
+        - targetLanguage
+        - file
+
+    TranslationRequestResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the translation request.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        title:
+          type: string
+          description: Short name for the translation request.
+          example: Business Contract Translation
+        description:
+          type: string
+          description: Detailed description of the translation.
+          example: Legal business contract that needs translation
+        sourceLanguage:
+          type: string
+          description: The language of the original document.
+          example: English
+        targetLanguage:
+          type: string
+          description: The language to translate to.
+          example: Spanish
+        originalFileName:
+          type: string
+          description: The name of the uploaded file.
+          example: contract.pdf
+        status:
+          $ref: '#/components/schemas/TranslationStatus'
+        userComment:
+          type: string
+          nullable: true
+          description: Comments from the user about the request.
+          example: Please preserve the legal terminology
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the request was created (UTC).
+          example: '2025-04-27T16:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the request was last updated (UTC).
+          example: '2025-04-28T10:15:00Z'
+        userId:
+          type: string
+          format: uuid
+          description: Unique identifier of the user who created the request.
+          example: 8f7e6d5c-4b3a-2a1b-0c9d-8e7f6a5b4c3d
+
+    UserTranslationRequestListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the translation request.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        title:
+          type: string
+          description: Short name for the translation request.
+          example: Business Contract Translation
+        description:
+          type: string
+          description: Detailed description of the translation.
+          example: Legal business contract that needs translation
+        sourceLanguage:
+          type: string
+          description: The language of the original document.
+          example: English
+        targetLanguage:
+          type: string
+          description: The language to translate to.
+          example: Spanish
+        originalFileName:
+          type: string
+          description: The name of the uploaded file.
+          example: contract.pdf
+        status:
+          $ref: '#/components/schemas/TranslationStatus'
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the request was created (UTC).
+          example: '2025-04-27T16:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the request was last updated (UTC).
+          example: '2025-04-27T09:15:00Z'
+
+
+    TranslationRequestDetailsResponse:
+      allOf:
+        - $ref: '#/components/schemas/TranslationRequestResponse'
+        - type: object
+          properties:
+            storedFileName:
+              type: string
+              nullable: true
+              description: The file name used for server storage.
+              example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d_contract.pdf
+            translatedFileName:
+              type: string
+              nullable: true
+              description: The file name of the translated document.
+              example: Translated_contract.pdf
+            adminComment:
+              type: string
+              nullable: true
+              description: Comments from the administrator.
+              example: Approved for translation to begin
+            completedAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: Timestamp when the translation was completed (UTC).
+              example: '2025-04-30T15:45:00Z'
+
+
+    UpdateTranslationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the translation request.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        title:
+          type: string
+          description: Short name for the translation request.
+          example: Updated Contract Translation
+        description:
+          type: string
+          description: Detailed description of the translation.
+          example: Legal business contract requiring certified translation
+        sourceLanguage:
+          type: string
+          description: The language of the original document.
+          example: English
+        targetLanguage:
+          type: string
+          description: The language to translate to.
+          example: Spanish
+        userComment:
+          type: string
+          nullable: true
+          description: Comments from the user about the request.
+          example: Please ensure legal terminology is correctly translated
+      required:
+        - id
+        - title
+        - description
+        - sourceLanguage
+        - targetLanguage
+
+
+    ResubmitTranslationRequest:
+      type: object
+      properties:
+        userComment:
+          type: string
+          description: Explanation of changes addressing rejection reason.
+          example: I've fixed the formatting issues as requested
+        file:
+          type: string
+          format: binary
+          nullable: true
+          description: New document to translate (optional, max 10MB, txt, doc, docx, pdf).
+      required:
+        - userComment
+
+
+    TranslationStatus:
+      type: string
+      enum:
+        - Pending
+        - Approved
+        - Completed
+        - Rejected
+        - Resubmitted
+      description: Current status of the translation request.
+
+    AdminTranslationRequestListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the translation request.
+          example: 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+        title:
+          type: string
+          description: Short name for the translation request.
+          example: Business Contract Translation
+        description:
+          type: string
+          description: Detailed description of the translation.
+          example: Legal business contract that needs translation
+        sourceLanguage:
+          type: string
+          description: The language of the original document.
+          example: English
+        targetLanguage:
+          type: string
+          description: The language to translate to.
+          example: Spanish
+        originalFileName:
+          type: string
+          description: The name of the uploaded file.
+          example: contract.pdf
+        status:
+          $ref: '#/components/schemas/TranslationStatus'
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the request was created (UTC).
+          example: '2025-04-27T16:00:00Z'
+        userId:
+          type: string
+          format: uuid
+          description: Unique identifier of the user who created the request.
+          example: 8f7e6d5c-4b3a-2a1b-0c9d-8e7f6a5b4c3d
+        user:
+          $ref: '#/components/schemas/AdminRequestUser'
+
+    AdminRequestUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User's unique identifier.
+          example: 8f7e6d5c-4b3a-2a1b-0c9d-8e7f6a5b4c3d
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Smith
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: john.smith@example.com
+
+    AdminTranslationRequestDetailsResponse:
+      allOf:
+        - $ref: '#/components/schemas/TranslationRequestDetailsResponse'
+        - type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/AdminRequestUser'
+
+    AdminCommentRequest:
+      type: object
+      properties:
+        comment:
+          type: string
+          description: Comment from the administrator.
+          example: Approved for translation to begin
+      required:
+        - comment
+
+    CompleteTranslationRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The translated file (required, max 10MB, txt, doc, docx, pdf).
+        adminComment:
+          type: string
+          nullable: true
+          description: Additional comments on the translation.
+          example: Translation completed with all legal terminology preserved.
+      required:
+        - file
+
+    AdminUserListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User's unique identifier.
+          example: 8f7e6d5c-4b3a-2a1b-0c9d-8e7f6a5b4c3d
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: john.smith@example.com
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Smith
+        userName:
+          type: string
+          description: User's username (usually email).
+          example: john.smith@example.com
+        roles:
+          type: array
+          items:
+            type: string
+          description: List of roles assigned to the user.
+          example: ["User"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the user account was created (UTC).
+          example: '2025-04-27T10:30:00Z'
+
+    AdminUserDetailsResponse:
+      allOf:
+        - $ref: '#/components/schemas/AdminUserListItem'
+        - type: object
+          properties:
+            updatedAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: Timestamp when the user profile was last updated (UTC).
+              example: '2025-04-28T14:15:00Z'
+
+    AdminUpdateUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: User's first name.
+          example: John
+        lastName:
+          type: string
+          description: User's last name.
+          example: Smith
+        email:
+          type: string
+          format: email
+          description: User's email address.
+          example: john.smith@example.com
+        roles:
+          type: array
+          items:
+            type: string
+          description: List of roles to assign to the user.
+          example: ["User", "Admin"]
+      required:
+        - firstName
+        - lastName
+        - email
+        - roles
+
+
+  responses:
+    BadRequest:
+      description: Validation failed or request data is incorrect
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: http://tools.ietf.org/html/rfc7231#section-6.5.1
+              title:
+                type: string
+                example: Bad Request
+              status:
+                type: integer
+                example: 400
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                example:
+                  PropertyName: ["Error description"]
+    Unauthorized:
+      description: Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: http://tools.ietf.org/html/rfc7235#section-3.1
+              title:
+                type: string
+                example: Unauthorized
+              status:
+                type: integer
+                example: 401
+              detail:
+                type: string
+                example: Invalid authentication token
+    Forbidden:
+      description: Valid authentication but insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: http://tools.ietf.org/html/rfc7231#section-6.5.3
+              title:
+                type: string
+                example: Forbidden
+              status:
+                type: integer
+                example: 403
+              detail:
+                type: string
+                example: Insufficient permissions to access this resource
+    NotFound:
+      description: Resource does not exist
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: http://tools.ietf.org/html/rfc7231#section-6.5.4
+              title:
+                type: string
+                example: Not Found
+              status:
+                type: integer
+                example: 404
+              detail:
+                type: string
+                example: The requested resource was not found
+    InternalServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: http://tools.ietf.org/html/rfc7231#section-6.6.1
+              title:
+                type: string
+                example: Internal Server Error
+              status:
+                type: integer
+                example: 500
+              detail:
+                type: string
+                example: An error occurred while processing your request
