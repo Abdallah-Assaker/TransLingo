@@ -1,0 +1,175 @@
+Translator App
+learn about copilot:
+message limit for copilot Pro chat
+@workspaces, slash commands, copilot edits
+
+
+Pages:
+(unauthorized):
+    (form validation for both, with schema auth-generated from the database interface)
+    login
+    signup
+
+
+(authorized):
+    user:
+     ( Back-end uses JWT to confirm token is indeed related to the requesting user )
+        Dashboard:
+          Top nav bar with bread-crumbs
+          User information component as a card
+          hero table component:
+            list all translation requests
+            each request is a link to the translation request page
+          Add translation request component
+        Translation request Page:
+          Hero component containing information about translation request:
+        Translation request Modify:
+          Hero component containing information about translation request:
+        Profile data:
+          Update profile component:
+              form to update the user data
+
+    Admin:
+        Dashboard:
+          Top nav bar with bread-crumbs
+          Admin information card
+          Pending Translation requests table hero component
+        User Details page:
+          [ QueryParam ]
+          Profile information card component
+        All Users Page:
+          Table component for all users registered in the system
+        Translation Request Page:
+          [ QueryParam ]
+          Translation request info card containing:
+            Information about the request
+            button for:
+               deleting request
+               approving request
+               complete request?
+               downloading original file
+
+Components:
+    User Table
+    LogIn form
+    SignUp form
+    Navigation bar
+    Navigation sidebar
+    User information card
+    Translation request table
+    Translation request information card
+    Add Translation request form [file upload]
+
+
+
+TODO:
+(sidebar):
+  Make sure links work for user
+  Make sidebar for admin
+(view translateRequest page):
+  update the route in event handler function to redirect
+  place buttons in a separate component to display content conditionally RequestButtons
+  place admin buttons inside the component, display only if user is admin AdminButtons
+  update conditional rendering of buttons:
+    if User:
+      RequestButtons:
+        if status is pending:
+          show modify and download original button
+        if status is rejected:
+          show resubmit and download original button
+        if status is approved or completed or resubmitted:
+          show download translated and download original button
+    if Admin:
+      RequestButtons:
+        if status is pending:
+          show modify and download original button
+        if status is rejected:
+          download original button
+        if status is approved or completed or resubmitted:
+          show download translated and download original button
+      Admin buttons component:
+      if status is pending:
+        show Approve or reject buttons
+      if status is approved or rejected:
+        show complete button
+(userTable)
+(profileUpdateForm):
+  For user and admin
+(landingPage):
+  improve look of hero component in the landing page
+
+
+
+Authentication Endpoints (/api/Auth)
+
+POST /api/Auth/register
+Roles: Public (No authentication required)
+Description: Registers a new user. Expects user details (RegisterModel) in the request body.
+POST /api/Auth/login
+Roles: Public (No authentication required)
+Description: Authenticates an existing user. Expects credentials (LoginModel) in the request body and returns a JWT token (AuthResponse) upon success.
+GET /api/Auth/profile
+Roles: User, Admin (Any authenticated user)
+Description: Retrieves the profile information of the currently logged-in user (identified by the JWT token).
+PUT /api/Auth/profile
+Roles: User, Admin (Any authenticated user)
+Description: Updates the profile information of the currently logged-in user. Expects updated profile data (UpdateProfileModel) in the request body.
+GET /api/Auth/users
+Roles: Admin
+Description: Retrieves a list of all registered users in the system.
+GET /api/Auth/users/{userId}
+Roles: Admin
+Description: Retrieves the profile information for a specific user identified by {userId}.
+PUT /api/Auth/users
+Roles: Admin
+Description: Updates the profile information for any user. Expects the target UserId and updated profile data (AdminUpdateUserModel) in the request body.
+User Translation Request Endpoints (/api/TranslationRequest)
+
+POST /api/TranslationRequest
+Roles: User, Admin
+Description: Creates a new translation request for the logged-in user. Expects form data (TranslationRequestFormModel), including the file to be translated.
+GET /api/TranslationRequest
+Roles: User, Admin
+Description: Retrieves all translation requests submitted by the currently logged-in user.
+GET /api/TranslationRequest/{id}
+Roles: User, Admin
+Description: Retrieves the details of a specific translation request identified by {id}, belonging to the logged-in user.
+PUT /api/TranslationRequest/{id}
+Roles: User, Admin
+Description: Updates the details (like title, description, comments) of an existing translation request identified by {id}, belonging to the logged-in user. Expects TranslationRequestUpdateModel in the request body.
+DELETE /api/TranslationRequest/{id}
+Roles: User, Admin
+Description: Deletes a specific translation request identified by {id}, belonging to the logged-in user.
+GET /api/TranslationRequest/{id}/download-original
+Roles: User, Admin
+Description: Downloads the original file associated with the translation request identified by {id}, belonging to the logged-in user.
+GET /api/TranslationRequest/{id}/download-translated
+Roles: User, Admin
+Description: Downloads the translated file for a completed translation request identified by {id}, belonging to the logged-in user.
+POST /api/TranslationRequest/{id}/resubmit
+Roles: User, Admin
+Description: Resubmits a rejected translation request identified by {id}, belonging to the logged-in user. Expects form data (ResubmitRequestFormModel) including a mandatory user comment and an optional new file.
+Admin Translation Management Endpoints (/api/admin/Translation)
+
+GET /api/admin/Translation
+Roles: Admin
+Description: Retrieves a list of all translation requests in the system.
+GET /api/admin/Translation/{id}
+Roles: Admin
+Description: Retrieves the details of any specific translation request identified by {id}.
+POST /api/admin/Translation/{id}/approve
+Roles: Admin
+Description: Approves the translation request identified by {id}. Expects an optional comment (AdminCommentModel) in the request body.
+POST /api/admin/Translation/{id}/reject
+Roles: Admin
+Description: Rejects the translation request identified by {id}. Expects a mandatory comment (AdminCommentModel) in the request body.
+POST /api/admin/Translation/{id}/complete
+Roles: Admin
+Description: Marks the translation request identified by {id} as complete and uploads the translated file. Expects form data (TranslationCompletionModel) including the translated file and an optional comment.
+GET /api/admin/Translation/{id}/download-original
+Roles: Admin
+Description: Downloads the original file associated with any translation request identified by {id}.
+GET /api/admin/Translation/{id}/download-translated
+Roles: Admin
+Description: Downloads the translated file for any completed translation request identified by {id}.
+This list covers the endpoints defined in the AuthController, TranslationRequestController, and AdminTranslationController based on their routes and authorization attributes. Remember to send the JWT token in the Authorization: Bearer <token> header for all endpoints requiring authentication.
